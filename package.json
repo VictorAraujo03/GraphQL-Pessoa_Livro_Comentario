@@ -1,0 +1,19 @@
+{
+  "name": "pessoa_livros_comentarios",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@graphql-yoga/node": "^3.9.1",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "express": "^4.18.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^16.6.0"
+  },
+  "description": ""
+}
