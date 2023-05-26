@@ -1,5 +1,6 @@
 import { createSchema, createYoga } from "graphql-yoga";
 import { createServer } from 'node:http'
+import { resolve } from "node:path";
 
 const pessoas = [
   {
@@ -29,44 +30,74 @@ const livros = [
   }  
 ]
 
+const comentarios = [
+  {
+    id: '1001',
+    texto: 'Excelente',
+    nota: 5,
+    livro: '101',
+    autor: '1'
+  },
+  {
+    id: '1002',
+    texto: 'Gostei muito',
+    nota: 4,
+    livro: '101',
+    autor: '1'
+  }
+]
+
 const schema = createSchema({
   typeDefs: `
-    type Pessoa{
+    type Pessoa {
       id: ID!
       nome: String!
       idade: Int
       livros: [Livro!]!
+      comentarios: [Comentario!]!
     }
-    type Livro{
+    type Livro {
       id: ID!
       titulo: String!
       edicao: Int!
       autor: Pessoa!  
+      comentarios: [Comentario!]!
     }
-    type Comentario{
+    type Comentario {
       id: ID!
       texto: String!
       nota: Int!
+      livro: Livro!
+      autor: Pessoa!
     }
     type Query {
       livros: [Livro!]!
       pessoas: [Pessoa!]!
+      comentarios: [Comentario!]!
     }
   `,
+  
+  //1. Dizer que a operacao de busca de comentarios existe
   resolvers: {
     Query: {
-      livros(){
+      livros() {
         return livros
       },
-      pessoas(){
+      pessoas() {
         return pessoas
-      }  
+      },
+      comentarios() {
+        return comentarios
+      }
     },
     Livro: {
-      autor(parent, args, ctx, info){
+      autor(parent, args, ctx, info) {
         //devolver o objeto pessoa cujo id seja igual ao valor existente em parent.autor
         //dica: use a função find do javascript para operar sobre a coleção pessoas
         return pessoas.find(p => p.id === parent.autor)  
+      },
+      comentarios(parent, args, ctx, info) {
+        return comentarios.filter(c => c.livro === parent.id)
       }  
     },
     Pessoa: {
@@ -75,8 +106,19 @@ const schema = createSchema({
       //ele utiliza a função filter operando sobre a coleção de livros
       //lembrando que ela produz uma coleção
       //somente devem ser incluidos os livros pertencentes a essa pessoa
-      livros(parent, args, ctx, info){
+      livros(parent, args, ctx, info) {
         return livros.filter(l => l.autor === parent.id)
+      },
+      comentarios(parent, args, ctx, info) {
+        return comentarios.filter(c => livros.find(l => l.id === c.livro && l.autor === parent.id))
+      }
+    },
+    Comentario: {
+      livro(parent, args, ctx, info) {
+        return livros.find(livro => livro.id === parent.livro)  
+      },
+      autor(parent, args, ctx, info) {
+        return pessoas.find(pessoa => pessoa.id === parent.autor)
       }
     }
   }
